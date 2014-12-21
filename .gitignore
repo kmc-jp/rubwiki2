@@ -1,3 +1,5 @@
-.bundle/
-.sass-cache/
-vendor/bundle/
+/.bundle/
+/.sass-cache/
+/vendor/bundle/
+/config/config.yml
+

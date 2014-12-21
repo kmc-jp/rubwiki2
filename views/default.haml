@@ -1,0 +1,6 @@
+!!! 5
+%html{ html_attrs('ja') }
+  %head
+    %meta{ charset: 'utf-8' }
+  %body
+    %article!~ article # !~ は html エスケープせず、かつ<pre>などで空白の補正をしない

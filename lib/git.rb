@@ -1,6 +1,8 @@
 require 'rugged'
 
-module Rubwiki2
+require_relative 'error'
+
+module RubWiki2
   class Git
     def initialize(path)
       @repo = Rugged::Repository.new(path)
@@ -34,6 +36,14 @@ module Rubwiki2
       }
       Rugged::Commit.create(@repo, options)
     end
+
+    def get(path)
+      @tree.get(path)
+    end
+
+    def exist?(path)
+      @tree.exist?(path)
+    end
   end
 
   class Blob
@@ -51,6 +61,18 @@ module Rubwiki2
 
     def type
       return :blob
+    end
+
+    def get(path)
+      if path.empty?
+        return self
+      else
+        raise Error::InvalidPath.new
+      end
+    end
+
+    def content
+      @repo.lookup(@oid).text
     end
   end
 
@@ -129,6 +151,35 @@ module Rubwiki2
         @children.delete(path)
       end
       @oid = Tree.create_tree_object(@repo, @children) unless @children.empty?
+    end
+
+    def get(path)
+      if path.empty?
+        return self
+      else
+        if @children.include?(path.partition('/').first)
+          return @children[path.partition('/').first].get(path.partition('/').last)
+        else
+          raise Error::InvalidPath.new
+        end
+      end
+    end
+
+    def exist?(path)
+      if path.include?('/')
+        if @children.include?(path.partition('/').first)
+          child = @children[path.partition('/').first]
+          if child.type == :tree
+            return child.exist?(path.partition('/').last)
+          else
+            return false
+          end
+        else
+          return false
+        end
+      else
+        return @children.include?(path)
+      end
     end
   end
 end

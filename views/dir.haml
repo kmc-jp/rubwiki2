@@ -1,0 +1,8 @@
+%ul
+  - entries.each do |entry|
+    %li<
+      - case entry[:type]
+      - when :blob
+        %a{ href: "./#{entry[:name]}" }= entry[:name]
+      - when :tree
+        %a{ href: "./#{entry[:name]}/" }= entry[:name] + '/'
