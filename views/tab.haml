@@ -1,0 +1,14 @@
+%div{ id: 'content' }
+  %div{ id: 'tab' }
+    %ul
+      %li{ class: activetab == :page ? 'item active' : 'item' }<
+        %a{ href: '?' } Page
+      %li{ class: activetab == :edit ? 'item active' : 'item' }<
+        %a{ href: '?edit' } Edit
+      %li{ class: activetab == :history ? 'item active' : 'item' }<
+        %a{ href: '?history' } History
+      %li{ class: activetab == :raw ? 'item active' : 'item' }<
+        %a{ href: '?raw' } Raw
+      %li{ class: 'dummy' }
+  %div{ class: 'tab-border' }
+    %div{ id: 'content-html' }!~ content

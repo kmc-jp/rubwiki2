@@ -2,5 +2,32 @@
 %html{ html_attrs('ja') }
   %head
     %meta{ charset: 'utf-8' }
+    %meta{ name: 'viewport', content: 'width=device-width' }
+    %link{ rel: 'stylesheet', href: '/css/style.css' }
   %body
-    %article!~ article # !~ は html エスケープせず、かつ<pre>などで空白の補正をしない
+    %div{ id: 'left-container'}
+      %div{ id: 'logo' }
+        %a{ href: '/' }<
+          %img{ src: '/img/logo.png'}
+      %div{ id: 'nav' }
+        %div{ class: 'border' }
+          %ul
+            %li<
+              %a{ href: '/' } Top
+            %li<
+              %a{ href: '/' }<
+                Front
+                %span{ class: 'only-pc'}< Page
+            %li<
+              %a{ href: '/' } All
+            %li<
+              %a{ href: '/' }<
+                History
+                %span{ class: 'only-pc'}< (All)
+            %li<
+              %a{ href: '/' }<
+                New
+                %span{ class: 'only-pc'}< Page
+      %div{ id: 'search' }
+        %div{ class: 'border' }
+    %div{ id: 'right-container' }!~ content # !~ は html エスケープせず、かつ<pre>などで空白の補正をしない

@@ -2,6 +2,7 @@
 
 require 'uri'
 require 'haml'
+require 'sass'
 require 'sanitize'
 require 'kramdown'
 require 'mime-types'
@@ -46,6 +47,10 @@ module RubWiki2
       @git = Git.new(settings.git_repo_path)
     end
 
+    get '/css/style.css' do
+      scss(:style)
+    end
+
     get '*/' do |path|
       path = path[1..-1] if path[0] == '/'
       obj = @git.get(path)
@@ -58,8 +63,8 @@ module RubWiki2
           entries << { name: name, type: :tree }
         end
       end
-      article = haml(:dir, locals: { entries: entries })
-      return haml(:default, locals: { article: article })
+      content = haml(:dir, locals: { entries: entries })
+      return haml(:default, locals: { content: content })
     end
 
     get '*' do |path|
@@ -67,8 +72,21 @@ module RubWiki2
       if @git.exist?(path + '.md')
         # file (*.md)
         obj = @git.get(path + '.md')
-        article = sanitize(markdown(obj.content))
-        return haml(:default, locals: { article: article })
+        case request.query_string
+        when ''
+          content = sanitize(markdown(obj.content))
+          content = haml(:page, locals: { content: content, title: path })
+          content = haml(:tab, locals: { content: content, activetab: :page })
+          return haml(:default, locals: { content: content })
+        when 'edit'
+          form = haml(:form, locals: {
+                        markdown: obj.content, oid: obj.oid,
+                        message: '', notify: true
+                      })
+          content = haml(:edit, locals: { form: form, title: path })
+          content = haml(:tab, locals: { content: content, activetab: :edit })
+          return haml(:default, locals: { content: content })
+        end
       else
         obj = @git.get(path)
         case obj.type
