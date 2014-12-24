@@ -1,4 +1,4 @@
-%form{ name: 'edit', method: 'POST', action: '!commit' }
+%form{ name: 'edit', method: 'POST' }
   %textarea{ name: 'markdown' }!~ markdown
   %br
   %label<
@@ -6,8 +6,8 @@
     %input.text{ type: 'text', name: 'message', value: message }
   %br
   %input{ type: 'hidden', name: 'oid', value: oid }
-  %input{ type: 'button', value: '更新' }
-  %input{ type: 'button', value: 'プレビュー' }
+  %input{ type: 'submit', value: '更新', formaction: '?commit' }
+  %input{ type: 'submit', value: 'プレビュー', formaction: '?preview' }
   %label<
     %input{ type: 'checkbox', name: 'notification', value: 'false', checked: !notify }
     IRC に通知しない

@@ -41,6 +41,14 @@ module RubWiki2
       def sanitize(html)
         return Sanitize.fragment(html, Sanitize::Config::RELAXED)
       end
+
+      def remote_user
+        if request.env['REMOTE_USER']
+          return request.env['REMOTE_USER']
+        else
+          return 'anonymous'
+        end
+      end
     end
 
     before do
@@ -69,37 +77,77 @@ module RubWiki2
 
     get '*' do |path|
       path = path[1..-1] if path[0] == '/'
-      if @git.exist?(path + '.md')
-        # file (*.md)
-        obj = @git.get(path + '.md')
-        case request.query_string
-        when ''
+      case request.query_string
+      when ''
+        if @git.exist?(path + '.md')
+          # file (*.md)
+          obj = @git.get(path + '.md')
           content = sanitize(markdown(obj.content))
           content = haml(:page, locals: { content: content, title: path })
           content = haml(:tab, locals: { content: content, activetab: :page })
           return haml(:default, locals: { content: content })
-        when 'edit'
-          form = haml(:form, locals: {
-                        markdown: obj.content, oid: obj.oid,
-                        message: '', notify: true
-                      })
-          content = haml(:edit, locals: { form: form, title: path })
-          content = haml(:tab, locals: { content: content, activetab: :edit })
-          return haml(:default, locals: { content: content })
+        elsif @git.exist?(path)
+          obj = @git.get(path)
+          case obj.type
+          when :blob
+            # file
+            guess_mime(path)
+            return obj.content
+          when :tree
+            # dir (redirect)
+            redirect to(URI.encode(path) + '/')
+          end
+        else
+          raise Error::InvalidPath.new
         end
-      else
-        obj = @git.get(path)
-        case obj.type
-        when :blob
-          # file
-          guess_mime(path)
-          return obj.content
-        when :tree
-          # dir (redirect)
-          redirect to(URI.encode(path) + '/')
-        end
+      when 'edit'
+        obj = if @git.exist?(path + '.md')
+                @git.get(path + '.md')
+              elsif @git.can_create?(path + '.md')
+                nil
+              else
+                raise Error::InvalidPath.new
+              end
+        form = haml(:form, locals: {
+                      markdown: obj ? obj.content : '', oid: obj ? obj.oid : '',
+                      message: '', notify: true
+                    })
+        content = haml(:edit, locals: { form: form, title: path })
+        content = haml(:tab, locals: { content: content, activetab: :edit })
+        return haml(:default, locals: { content: content })
       end
     end
 
+    post '*' do |path|
+      path = path[1..-1] if path[0] == '/'
+      case request.query_string
+      when 'preview'
+        form = haml(:form, locals: {
+                      markdown: params[:markdown], oid: params[:oid],
+                      message: params[:message], notify: params[:notification] != 'false'
+                    })
+        content = sanitize(markdown(params[:markdown]))
+        content = haml(:preview, locals: { form: form, content: content, title: path })
+        content = haml(:tab, locals: { content: content, activetab: :edit })
+        return haml(:default, locals: { content: content })
+      when 'commit'
+        raise Error::EmptyCommitMessage.new if params[:message].empty?()
+        if @git.exist?(path + '.md')
+          old_obj = @git.get(path + '.md')
+          if old_obj.oid == params[:oid]
+            @git.add(path + '.md', params[:markdown])
+            @git.commit(remote_user(), params[:message])
+            redirect to(URI.encode(path))
+          else
+          end
+        elsif @git.can_create?(path + '.md')
+          @git.add(path + '.md', params[:markdown])
+          @git.commit(remote_user(), params[:message])
+          redirect to(URI.encode(path))
+        else
+          raise Error::InvalidPath.new
+        end
+      end
+    end
   end
 end

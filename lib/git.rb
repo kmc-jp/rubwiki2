@@ -44,6 +44,10 @@ module RubWiki2
     def exist?(path)
       @tree.exist?(path)
     end
+
+    def can_create?(path)
+      @tree.can_create_blob?(path)
+    end
   end
 
   class Blob
@@ -179,6 +183,23 @@ module RubWiki2
         end
       else
         return @children.include?(path)
+      end
+    end
+
+    def can_create_blob?(path)
+      if path.include?('/')
+        if @children.include?(path.partition('/').first)
+          child = @children[path.partition('/').first]
+          if child.type == :tree
+            return child.exist?(path.partition('/').last)
+          else
+            return false
+          end
+        else
+          return true
+        end
+      else
+        return !@children.include?(path)
       end
     end
   end
