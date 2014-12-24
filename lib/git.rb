@@ -48,6 +48,16 @@ module RubWiki2
     def can_create?(path)
       @tree.can_create_blob?(path)
     end
+
+    def get_from_oid(oid)
+      obj = @repo.lookup(oid)
+      case obj.type
+      when :blob
+        return Blob.new(@repo, oid)
+      when :tree
+        return Tree.get_trees(@repo, oid)
+      end
+    end
   end
 
   class Blob

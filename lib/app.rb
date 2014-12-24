@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 require 'uri'
+require 'nkf'
 require 'haml'
 require 'sass'
+require 'tmpdir'
 require 'sanitize'
 require 'kramdown'
 require 'mime-types'
@@ -48,6 +50,21 @@ module RubWiki2
         else
           return 'anonymous'
         end
+      end
+
+      def merge(web, old, new)
+        merge = nil
+        Dir.mktmpdir do |dir|
+          Dir.chdir(dir) do
+            File.write("web", web)
+            File.write("old", old)
+            File.write("new", new)
+            IO.popen("diff3 -mE web old new", "r", :encoding => Encoding::UTF_8) do |io|
+              merge = io.read
+            end
+          end
+        end
+        return merge, ($? == 0)
       end
     end
 
@@ -132,16 +149,33 @@ module RubWiki2
         return haml(:default, locals: { content: content })
       when 'commit'
         raise Error::EmptyCommitMessage.new if params[:message].empty?()
+        md_from_web = NKF.nkf('-Luw', params[:markdown])
         if @git.exist?(path + '.md')
           old_obj = @git.get(path + '.md')
           if old_obj.oid == params[:oid]
-            @git.add(path + '.md', params[:markdown])
+            @git.add(path + '.md', md_from_web)
             @git.commit(remote_user(), params[:message])
             redirect to(URI.encode(path))
           else
+            old_obj = @git.get_from_oid(params[:oid])
+            new_obj = @git.get(path + '.md')
+            merged, success = merge(md_from_web, old_obj.content, new_obj.content)
+            if success
+              @git.add(path + '.md', merged)
+              @git.commit(remote_user(), params[:message])
+              redirect to(URI.encode(path))
+            else
+              form = haml(:form, locals: {
+                            markdown: merged, oid: new_obj.oid,
+                            message: params[:message], notify: params[:notification] != 'false'
+                          })
+              content = haml(:conflict, locals: { form: form, content: content, title: path })
+              content = haml(:tab, locals: { content: content, activetab: :edit })
+              return haml(:default, locals: { content: content })
+            end
           end
         elsif @git.can_create?(path + '.md')
-          @git.add(path + '.md', params[:markdown])
+          @git.add(path + '.md', md_from_web)
           @git.commit(remote_user(), params[:message])
           redirect to(URI.encode(path))
         else
