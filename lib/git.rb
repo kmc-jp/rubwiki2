@@ -212,7 +212,7 @@ module RubWiki2
         if @children.include?(path.partition('/').first)
           child = @children[path.partition('/').first]
           if child.type == :tree
-            return child.exist?(path.partition('/').last)
+            return child.can_create_blob?(path.partition('/').last)
           else
             return false
           end

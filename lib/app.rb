@@ -115,7 +115,7 @@ module RubWiki2
             redirect to(URI.encode(path) + '/')
           end
         else
-          raise Error::InvalidPath.new
+          redirect to(URI.encode(path) + '?edit')
         end
       when 'edit'
         obj = if @git.exist?(path + '.md')
