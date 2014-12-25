@@ -2,6 +2,7 @@
     display: box;
     display: -moz-box;
     display: -webkit-box;
+    display: flex;
 }
 
 @mixin box-sizing {
@@ -14,6 +15,7 @@
     -webkit-box-flex: 1;
     -moz-box-flex: 1;
     box-flex: 1;
+    flex: 1;
 }
 
 @mixin border {
@@ -115,6 +117,21 @@ $padding: 7px;
     div#search {
         margin: 0;
         padding: $padding;
+
+        form {
+            margin: 0;
+            padding: $padding;
+        }
+
+        input.text {
+            @include box-sizing;
+            width: 100%;
+            margin: 0 0 $padding 0;
+        }
+
+        input.buttom {
+            width: 100%;
+        }
     }
 
     div#content {
@@ -214,6 +231,17 @@ $padding: 7px;
         width: $nav-width;
         margin: 0;
         padding: $padding;
+
+        form {
+            margin: 0;
+            padding: $padding;
+        }
+
+        input.text {
+            @include box-sizing;
+            width: 100%;
+            margin: 0 0 7px 0;
+        }
     }
 
     div#right-container {

@@ -1,0 +1,8 @@
+%div{ id: 'content' }
+  %div{ class: 'border' }
+    %div{ id: 'content-html' }
+      %h1{ class: 'title' }= keyword + ' の検索結果'
+      %ul
+        - result.each do |entry|
+          %li<
+            %a{ href: "/#{entry}" }= entry

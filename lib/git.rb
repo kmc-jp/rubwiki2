@@ -58,6 +58,17 @@ module RubWiki2
         return Tree.get_trees(@repo, oid)
       end
     end
+
+    def search(text)
+      result = []
+      @repo.head.target.tree.walk_blobs do |root, entry|
+        markdown = get_from_oid(entry[:oid]).content
+        if markdown.include?(text)
+          result << root + entry[:name]
+        end
+      end
+      return result
+    end
   end
 
   class Blob

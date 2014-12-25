@@ -30,4 +30,7 @@
                 %span{ class: 'only-pc'}< Page
       %div{ id: 'search' }
         %div{ class: 'border' }
+          %form{ name: 'search', method: 'POST' }
+            %input{ class: 'text', type: 'text', name: 'keyword' }
+            %input{ class: 'buttom', type: 'submit', value: '検索', formaction: '/?search' }
     %div{ id: 'right-container' }!~ content # !~ は html エスケープせず、かつ<pre>などで空白の補正をしない

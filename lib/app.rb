@@ -181,6 +181,16 @@ module RubWiki2
         else
           raise Error::InvalidPath.new
         end
+      when 'search'
+        result = @git.search(params[:keyword])
+        result = result.select do |entry|
+          File.extname(entry) == '.md'
+        end
+        result = result.map do |entry|
+          entry.sub(/.md$/, '')
+        end
+        content = haml(:search, locals: { result: result, keyword: params[:keyword] })
+        return haml(:default, locals: { content: content })
       end
     end
   end
