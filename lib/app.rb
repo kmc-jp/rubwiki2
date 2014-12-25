@@ -132,6 +132,15 @@ module RubWiki2
         content = haml(:edit, locals: { form: form, title: path })
         content = haml(:tab, locals: { content: content, activetab: :edit })
         return haml(:default, locals: { content: content })
+      when 'history'
+        if @git.exist?(path + '.md')
+          log = @git.log(path + '.md')
+          content = haml(:history, locals: { log: log, path: path })
+          content = haml(:tab, locals: { content: content, activetab: :history })
+          return haml(:default, locals: { content: content })
+        else
+          raise Error::InvalidPath.new
+        end
       end
     end
 

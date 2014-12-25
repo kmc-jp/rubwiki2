@@ -450,3 +450,15 @@ div#content-html {
         color: red;
     }
 }
+
+table#history {
+    a {
+        display: block;
+        width: 100%;
+        text-decoration: none;
+    }
+
+    td:hover {
+        background-color: mistyrose;
+    }
+}

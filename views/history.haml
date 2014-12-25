@@ -1,0 +1,10 @@
+%h1{ class: 'title' }= path + ' の更新履歴'
+%table{ id: 'history' }
+  %tr
+    %th Commit Message
+    %th Diff
+  - log.each do |commit|
+    %tr
+      %td
+        %a{ href: "?revision=#{commit.tree.oid}" }= commit.message
+      %td Diff
