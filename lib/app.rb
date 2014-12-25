@@ -88,7 +88,7 @@ module RubWiki2
           entries << { name: name, type: :tree }
         end
       end
-      content = haml(:dir, locals: { entries: entries })
+      content = haml(:dir, locals: { entries: entries, path: path })
       return haml(:default, locals: { content: content })
     end
 

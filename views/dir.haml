@@ -1,6 +1,7 @@
 %div{ id: 'content' }
   %div{ class: 'border' }
     %div{ id: 'content-html' }
+      %h1{ class: 'title' }= path + '/ の一覧'
       %ul
         - entries.each do |entry|
           %li<
