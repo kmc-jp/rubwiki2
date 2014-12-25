@@ -38,15 +38,19 @@ module RubWiki2
     end
 
     def get(path)
-      @tree.get(path)
+      return @tree.get(path)
     end
 
     def exist?(path)
-      @tree.exist?(path)
+      if path.empty?
+        return true
+      else
+        return @tree.exist?(path)
+      end
     end
 
     def can_create?(path)
-      @tree.can_create_blob?(path)
+      return @tree.can_create_blob?(path)
     end
 
     def get_from_oid(oid)
@@ -88,11 +92,11 @@ module RubWiki2
       return :blob
     end
 
-    def get(path)
+    def get(path = '')
       if path.empty?
         return self
       else
-        raise Error::InvalidPath.new
+        raise Error::InvalidPath.new("Blob can't contain \"#{path}\"")
       end
     end
 
@@ -185,7 +189,7 @@ module RubWiki2
         if @children.include?(path.partition('/').first)
           return @children[path.partition('/').first].get(path.partition('/').last)
         else
-          raise Error::InvalidPath.new
+          raise Error::FileNotFound.new("Tree does not contain \"#{path.partition('/').first}\"")
         end
       end
     end

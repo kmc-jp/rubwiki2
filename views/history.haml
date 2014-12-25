@@ -6,5 +6,6 @@
   - log.each do |commit|
     %tr
       %td
-        %a{ href: "?revision=#{commit.tree.oid}" }= commit.message
+        - msg = commit.message
+        %a{ href: "?revision=#{commit.tree.oid}" }= msg.empty? ? '<no commit message>' : msg
       %td Diff

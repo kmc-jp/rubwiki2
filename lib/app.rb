@@ -66,6 +66,11 @@ module RubWiki2
         end
         return merge, ($? == 0)
       end
+
+      def error(errorcode, title, message = nil)
+        content = haml(:error, locals: { title: "#{errorcode}: #{title}", message: message })
+        halt(errorcode, haml(:default, locals: { content: content }))
+      end
     end
 
     before do
@@ -78,18 +83,26 @@ module RubWiki2
 
     get '*/' do |path|
       path = path[1..-1] if path[0] == '/'
-      obj = @git.get(path)
-      entries = []
-      obj.children.each do |name, obj|
-        case obj.type
-        when :blob
-          entries << { name: File.basename(name, '.md'), type: :blob }
-        when :tree
-          entries << { name: name, type: :tree }
+      if @git.exist?(path)
+        obj = @git.get(path)
+        if obj.type == :tree
+          entries = []
+          obj.children.each do |name, obj|
+            case obj.type
+            when :blob
+              entries << { name: File.basename(name, '.md'), type: :blob }
+            when :tree
+              entries << { name: name, type: :tree }
+            end
+          end
+          content = haml(:dir, locals: { entries: entries, path: path })
+          return haml(:default, locals: { content: content })
+        else
+          error(400, "#{path} はディレクトリではありません")
         end
+      else
+        error(404, "#{path} というディレクトリは存在しません")
       end
-      content = haml(:dir, locals: { entries: entries, path: path })
-      return haml(:default, locals: { content: content })
     end
 
     get '*' do |path|
@@ -99,10 +112,16 @@ module RubWiki2
         if @git.exist?(path + '.md')
           # file (*.md)
           obj = @git.get(path + '.md')
-          content = sanitize(markdown(obj.content))
-          content = haml(:page, locals: { content: content, title: path })
-          content = haml(:tab, locals: { content: content, activetab: :page })
-          return haml(:default, locals: { content: content })
+          case obj.type
+          when :blob
+            content = sanitize(markdown(obj.content))
+            content = haml(:page, locals: { content: content, title: path })
+            content = haml(:tab, locals: { content: content, activetab: :page })
+            return haml(:default, locals: { content: content })
+          when :tree
+            error(500, "#{path}.md というディレクトリが存在します",
+                  'Git レポジトリを直接操作して修正してください。')
+          end
         elsif @git.exist?(path)
           obj = @git.get(path)
           case obj.type
@@ -118,13 +137,20 @@ module RubWiki2
           redirect to(URI.encode(path) + '?edit')
         end
       when 'edit'
-        obj = if @git.exist?(path + '.md')
-                @git.get(path + '.md')
-              elsif @git.can_create?(path + '.md')
-                nil
-              else
-                raise Error::InvalidPath.new
-              end
+        if @git.exist?(path) && @git.get(path).type == :blob
+          error(400, "#{path} は Markdown 以外のファイルです")
+        end
+        obj = nil
+        if @git.exist?(path + '.md')
+          obj = @git.get(path + '.md')
+          unless obj.type == :blob
+            error(500, "#{path}.md というディレクトリが存在します",
+                  'Git レポジトリを直接操作して修正してください。')
+          end
+        elsif !@git.can_create?(path + '.md')
+          error(400, "#{path} は作成できません")
+        end
+
         form = haml(:form, locals: {
                       markdown: obj ? obj.content : '', oid: obj ? obj.oid : '',
                       message: '', notify: true
@@ -134,13 +160,36 @@ module RubWiki2
         return haml(:default, locals: { content: content })
       when 'history'
         if @git.exist?(path + '.md')
+          unless @git.get(path + '.md').type == :blob
+            error(500, "#{path}.md というディレクトリが存在します",
+                  'Git レポジトリを直接操作して修正してください。')
+          end
           log = @git.log(path + '.md')
           content = haml(:history, locals: { log: log, path: path })
           content = haml(:tab, locals: { content: content, activetab: :history })
           return haml(:default, locals: { content: content })
         else
-          raise Error::InvalidPath.new
+          if @git.exist?(path)
+            error(400, "#{path} は Markdown 以外のファイルです")
+          else
+            error(404, "#{path} は存在しません")
+          end
         end
+      when /^revision=([0-9a-f]{40})$/
+        tree = @git.get_from_oid($1)
+        if tree.exist?(path + '.md')
+          obj = tree.get(path + '.md')
+          content = sanitize(markdown(obj.content))
+          content = haml(:revision, locals: { content: content, title: path, revision: $1 })
+          content = haml(:tab, locals: { content: content, activetab: nil })
+          return haml(:default, locals: { content: content })
+        elsif tree.exist?(path)
+          error(400, "#{path} は Markdown 以外のファイルです")
+        else
+          error(404, "#{path} は存在しません")
+        end
+      else
+        error(400, "不正なクエリです")
       end
     end
 
@@ -188,7 +237,7 @@ module RubWiki2
           @git.commit(remote_user(), params[:message])
           redirect to(URI.encode(path))
         else
-          raise Error::InvalidPath.new
+          error(400, "#{path} は作成できません")
         end
       when 'search'
         result = @git.search(params[:keyword])
@@ -200,6 +249,8 @@ module RubWiki2
         end
         content = haml(:search, locals: { result: result, keyword: params[:keyword] })
         return haml(:default, locals: { content: content })
+      else
+        error(400, "不正なクエリです")
       end
     end
   end
