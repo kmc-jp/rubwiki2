@@ -8,7 +8,7 @@ class Kramdown::Converter::HtmlCustom < Kramdown::Converter::Html
       attr['href'] = @options[:git].search_file(res)
     end
     if attr['href'].start_with?('/')
-      attr['href'] = @options[:baseurl] + attr['href']
+      attr['href'] = File.join(@options[:baseurl], attr['href'])
     end
     format_as_span_html(el.type, attr, res)
   end

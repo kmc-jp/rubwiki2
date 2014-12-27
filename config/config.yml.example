@@ -1,1 +1,3 @@
 git_repo_path: "/path/to/repo.git"
+frontpage: "Front_Page"
+wikiname: "rubwiki"

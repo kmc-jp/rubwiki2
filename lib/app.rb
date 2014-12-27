@@ -72,7 +72,7 @@ module RubWiki2
       end
 
       def markdown(data)
-        options = { git: @git, baseurl: '' }
+        options = { git: @git, baseurl: url('/') }
         html = Kramdown::Document.new(data, options).to_html_custom
         return Sanitize.fragment(html, Sanitize::Config::RELAXED)
       end

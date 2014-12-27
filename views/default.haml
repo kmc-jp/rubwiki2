@@ -3,25 +3,26 @@
   %head
     %meta{ charset: 'utf-8' }
     %meta{ name: 'viewport', content: 'width=device-width' }
-    %link{ rel: 'stylesheet', href: '/css/style.css' }
+    %link{ rel: 'stylesheet', href: url('/css/style.css') }
+    %title= settings.wikiname
   %body
     %div{ id: 'left-container'}
       %div{ id: 'logo' }
         %a{ href: '/' }<
-          %img{ src: '/img/logo.png'}
+          %img{ src: url('/img/logo.png') }
       %div{ id: 'nav' }
         %div{ class: 'border' }
           %ul
             %li<
               %a{ href: '/' } Top
             %li<
-              %a{ href: '/' }<
+              %a{ href: url('/' + settings.frontpage) }<
                 Front
                 %span{ class: 'only-pc'}< Page
             %li<
-              %a{ href: '/' } All
+              %a{ href: url('/') } All
             %li<
-              %a{ href: '/?history' }<
+              %a{ href: url('/?history') }<
                 History
                 %span{ class: 'only-pc'}< (All)
             %li<
@@ -32,5 +33,5 @@
         %div{ class: 'border' }
           %form{ name: 'search', method: 'POST' }
             %input{ class: 'text', type: 'text', name: 'keyword' }
-            %input{ class: 'buttom', type: 'submit', value: '検索', formaction: '/?search' }
+            %input{ class: 'buttom', type: 'submit', value: '検索', formaction: url('/?search') }
     %div{ id: 'right-container' }!~ content # !~ は html エスケープせず、かつ<pre>などで空白の補正をしない
