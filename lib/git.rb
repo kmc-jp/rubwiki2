@@ -4,6 +4,13 @@ require_relative 'error'
 
 module RubWiki2
   class Git
+    def self.chmod(repo, oid)
+      path = "#{repo.path}objects/#{oid[0, 2]}"
+      if File.stat(path).uid == Process::Sys.geteuid
+        File.chmod(02775, path)
+      end
+    end
+
     def initialize(path)
       @repo = Rugged::Repository.new(path)
       @tree = Tree.get_trees(@repo)
@@ -34,7 +41,8 @@ module RubWiki2
         parents: @repo.empty? ? [] : [ @repo.head.target ].compact,
         update_ref: 'HEAD'
       }
-      Rugged::Commit.create(@repo, options)
+      oid = Rugged::Commit.create(@repo, options)
+      Git.chmod(@repo, oid)
     end
 
     def get(path)
@@ -87,6 +95,7 @@ module RubWiki2
   class Blob
     def self.create(repo, data)
       oid = repo.write(data, :blob)
+      Git.chmod(repo, oid)
       return Blob.new(repo, oid)
     end
 
@@ -136,6 +145,7 @@ module RubWiki2
         end
       end
       oid = builder.write(repo)
+      Git.chmod(repo, oid)
       return oid
     end
 
