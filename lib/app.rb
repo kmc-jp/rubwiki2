@@ -139,7 +139,7 @@ module RubWiki2
         end
         diff = trees[:from].diff(trees[:to])
         content = haml(:dirdiff, locals: { diff: diff, title: path, trees: roottrees })
-        content = haml(:border, locals: { content: content })
+        content = haml(:dirtab, locals: { content: content, activetab: nil })
         return haml(:default, locals: { content: content })
       end
     end
