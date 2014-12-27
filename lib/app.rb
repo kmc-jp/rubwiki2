@@ -14,6 +14,7 @@ require 'sinatra/config_file'
 
 require_relative 'git'
 require_relative 'error'
+require_relative 'kramdown_custom'
 
 module RubWiki2
   class App < Sinatra::Base
@@ -22,6 +23,7 @@ module RubWiki2
       register Sinatra::Reloader
       also_reload File.join(File.dirname(__FILE__), 'git.rb')
       also_reload File.join(File.dirname(__FILE__), 'error.rb')
+      also_reload File.join(File.dirname(__FILE__), 'kramdown_custom.rb')
     end
 
     register Sinatra::ConfigFile
@@ -38,10 +40,6 @@ module RubWiki2
         rescue
           content_type 'text/plain'
         end
-      end
-
-      def sanitize(html)
-        return Sanitize.fragment(html, Sanitize::Config::RELAXED)
       end
 
       def remote_user
@@ -70,6 +68,12 @@ module RubWiki2
       def error(errorcode, title, message = nil)
         content = haml(:error, locals: { title: "#{errorcode}: #{title}", message: message })
         halt(errorcode, haml(:default, locals: { content: content }))
+      end
+
+      def markdown(data)
+        options = { git: @git, baseurl: '' }
+        html = Kramdown::Document.new(data, options).to_html_custom
+        return Sanitize.fragment(html, Sanitize::Config::RELAXED)
       end
     end
 
@@ -114,7 +118,7 @@ module RubWiki2
           obj = @git.get(path + '.md')
           case obj.type
           when :blob
-            content = sanitize(markdown(obj.content))
+            content = markdown(obj.content)
             content = haml(:page, locals: { content: content, title: path })
             content = haml(:tab, locals: { content: content, activetab: :page })
             return haml(:default, locals: { content: content })
@@ -179,7 +183,7 @@ module RubWiki2
         tree = @git.get_from_oid($1)
         if tree.exist?(path + '.md')
           obj = tree.get(path + '.md')
-          content = sanitize(markdown(obj.content))
+          content = markdown(obj.content)
           content = haml(:revision, locals: { content: content, title: path, revision: $1 })
           content = haml(:tab, locals: { content: content, activetab: nil })
           return haml(:default, locals: { content: content })
@@ -201,7 +205,7 @@ module RubWiki2
                       markdown: params[:markdown], oid: params[:oid],
                       message: params[:message], notify: params[:notification] != 'false'
                     })
-        content = sanitize(markdown(params[:markdown]))
+        content = markdown(params[:markdown])
         content = haml(:preview, locals: { form: form, content: content, title: path })
         content = haml(:tab, locals: { content: content, activetab: :edit })
         return haml(:default, locals: { content: content })

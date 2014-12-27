@@ -73,6 +73,15 @@ module RubWiki2
       end
       return result
     end
+
+    def search_file(basename)
+      @repo.head.target.tree.walk_blobs do |root, entry|
+        if File.basename(entry[:name], '.md') == basename
+          return "/#{root}#{File.basename(entry[:name], '.md')}"
+        end
+      end
+      return ''
+    end
   end
 
   class Blob
