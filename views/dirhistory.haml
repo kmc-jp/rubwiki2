@@ -1,0 +1,21 @@
+%h1{ class: 'title' }= path + '/ の更新履歴'
+%table{ id: 'history' }
+  %tr
+    %th Date
+    %th Auther
+    %th Commit Message
+    %th Diff
+  - count = 0
+  - log.each do |commit|
+    - count += 1
+    %tr
+      %td= commit.time.strftime('%Y/%m/%d')
+      %td= commit.author[:name]
+      %td
+        - msg = commit.message
+        = msg.empty? ? '<no commit message>' : msg
+      - if count == log.size
+        %td
+      - else
+        %td{ class: 'link center'}
+          %a{ href: "?diff&from=#{commit.parents.first.tree.oid}&to=#{commit.tree.oid}" } ○

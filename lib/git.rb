@@ -219,6 +219,8 @@ module RubWiki2
         else
           return false
         end
+      elsif path.empty?
+        return true
       else
         return @children.include?(path)
       end
@@ -239,6 +241,10 @@ module RubWiki2
       else
         return !@children.include?(path)
       end
+    end
+
+    def diff(tree)
+      return @repo.lookup(@oid).diff(@repo.lookup(tree.oid))
     end
   end
 end

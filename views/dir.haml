@@ -1,12 +1,9 @@
-%div{ id: 'content' }
-  %div{ class: 'border' }
-    %div{ id: 'content-html' }
-      %h1{ class: 'title' }= path + '/ の一覧'
-      %ul
-        - entries.each do |entry|
-          %li<
-            - case entry[:type]
-            - when :blob
-              %a{ href: "./#{entry[:name]}" }= entry[:name]
-            - when :tree
-              %a{ href: "./#{entry[:name]}/" }= entry[:name] + '/'
+%h1{ class: 'title' }= path + '/ の一覧'
+%ul
+  - entries.each do |entry|
+    %li<
+      - case entry[:type]
+      - when :blob
+        %a{ href: "./#{entry[:name]}" }= entry[:name]
+      - when :tree
+        %a{ href: "./#{entry[:name]}/" }= entry[:name] + '/'

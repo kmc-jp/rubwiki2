@@ -1,0 +1,10 @@
+%div{ id: 'content' }
+  %div{ id: 'tab' }
+    %ul
+      %li{ class: activetab == :dir ? 'item active' : 'item' }<
+        %a{ href: '?' } Dir
+      %li{ class: activetab == :history ? 'item active' : 'item' }<
+        %a{ href: '?history' } History
+      %li{ class: 'dummy' }
+  %div{ class: 'tab-border' }
+    %div{ id: 'content-html' }!~ content

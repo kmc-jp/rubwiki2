@@ -67,6 +67,7 @@ module RubWiki2
 
       def error(errorcode, title, message = nil)
         content = haml(:error, locals: { title: "#{errorcode}: #{title}", message: message })
+        content = haml(:border, locals: { content: content })
         halt(errorcode, haml(:default, locals: { content: content }))
       end
 
@@ -85,27 +86,61 @@ module RubWiki2
       scss(:style)
     end
 
+    get '' do
+      redirect to('/')
+    end
+
     get '*/' do |path|
       path = path[1..-1] if path[0] == '/'
-      if @git.exist?(path)
-        obj = @git.get(path)
-        if obj.type == :tree
-          entries = []
-          obj.children.each do |name, obj|
-            case obj.type
-            when :blob
-              entries << { name: File.basename(name, '.md'), type: :blob }
-            when :tree
-              entries << { name: name, type: :tree }
+      case request.query_string
+      when ''
+        if @git.exist?(path)
+          obj = @git.get(path)
+          if obj.type == :tree
+            entries = []
+            obj.children.each do |name, obj|
+              case obj.type
+              when :blob
+                entries << { name: File.basename(name, '.md'), type: :blob }
+              when :tree
+                entries << { name: name, type: :tree }
+              end
             end
+            content = haml(:dir, locals: { entries: entries, path: path })
+            content = haml(:dirtab, locals: { content: content, activetab: :dir })
+            return haml(:default, locals: { content: content })
+          else
+            error(400, "#{path} はディレクトリではありません")
           end
-          content = haml(:dir, locals: { entries: entries, path: path })
+        else
+          error(404, "#{path} というディレクトリは存在しません")
+        end
+      when 'history'
+        if @git.exist?(path)
+          unless @git.get(path).type == :tree
+            error(400, "#{path} はファイルではなくディレクトリです")
+          end
+          log = @git.log(path)
+          content = haml(:dirhistory, locals: { log: log, path: path })
+          content = haml(:dirtab, locals: { content: content, activetab: :history })
           return haml(:default, locals: { content: content })
         else
-          error(400, "#{path} はディレクトリではありません")
+          error(404, "#{path} は存在しません")
         end
-      else
-        error(404, "#{path} というディレクトリは存在しません")
+      when /^diff&from=([0-9a-f]{40})&to=([0-9a-f]{40})$/
+        roottrees = { from: @git.get_from_oid($1), to: @git.get_from_oid($2)}
+        trees = {}
+        roottrees.each do |key, tree|
+          if tree.exist?(path)
+            trees[key] = tree.get(path)
+          else
+            error(404, "Revision #{tree.oid} に #{path} は存在しません")
+          end
+        end
+        diff = trees[:from].diff(trees[:to])
+        content = haml(:dirdiff, locals: { diff: diff, title: path, trees: roottrees })
+        content = haml(:border, locals: { content: content })
+        return haml(:default, locals: { content: content })
       end
     end
 
@@ -179,6 +214,8 @@ module RubWiki2
             error(404, "#{path} は存在しません")
           end
         end
+      when 'raw'
+        redirect to(URI.encode(path) + '.md')
       when /^revision=([0-9a-f]{40})$/
         tree = @git.get_from_oid($1)
         if tree.exist?(path + '.md')
@@ -204,10 +241,10 @@ module RubWiki2
             error(404, "Revision #{tree.oid} に #{path} は存在しません")
           end
         end
-        diff = blobs[:to].diff(blobs[:from])
-        content = haml(:diff, locals: { diff: diff, title: path, blobs: blobs })
+        patch = blobs[:from].diff(blobs[:to])
+        content = haml(:diff, locals: { patch: patch, title: path, trees: trees })
         content = haml(:tab, locals: { content: content, activetab: nil })
-        return haml(:default, locals: { content: content.scrub })
+        return haml(:default, locals: { content: content })
       else
         error(400, "不正なクエリです")
       end
@@ -268,6 +305,7 @@ module RubWiki2
           entry.sub(/.md$/, '')
         end
         content = haml(:search, locals: { result: result, keyword: params[:keyword] })
+        content = haml(:border, locals: { content: content })
         return haml(:default, locals: { content: content })
       else
         error(400, "不正なクエリです")

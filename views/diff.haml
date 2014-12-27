@@ -1,20 +1,20 @@
 %h1{ class: 'title' }= title
-%span{ class: 'revision' }= "Changes from #{blobs[:from].oid} to #{blobs[:to].oid}"
+%span{ class: 'revision' }= "Changes from #{trees[:from].oid} to #{trees[:to].oid}"
 %pre
-  - diff.each_hunk do |hunk|
+  - patch.each_hunk do |hunk|
     %code{ class: 'diff-header' }
       &nbsp;&nbsp;
-      =  hunk.header.force_encoding('utf-8')
+      =  hunk.header.force_encoding('utf-8').scrub
     - hunk.each_line do |line|
       - if line.addition?
         %code{ class: 'diff-addition' }
           +&nbsp;
-          = line.content.force_encoding('utf-8')
+          = line.content.force_encoding('utf-8').scrub
       - elsif line.deletion?
         %code{ class: 'diff-deletion' }
           \-&nbsp;
-          = line.content.force_encoding('utf-8')
+          = line.content.force_encoding('utf-8').scrub
       - elsif line.context?
         %code
           &nbsp;&nbsp;
-          = line.content.force_encoding('utf-8')
+          = line.content.force_encoding('utf-8').scrub
