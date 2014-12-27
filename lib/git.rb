@@ -110,7 +110,11 @@ module RubWiki2
     end
 
     def content
-      @repo.lookup(@oid).text
+      return @repo.lookup(@oid).text
+    end
+
+    def diff(blob)
+      return @repo.lookup(@oid).diff(@repo.lookup(blob.oid))
     end
   end
 

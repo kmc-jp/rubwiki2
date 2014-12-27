@@ -458,7 +458,11 @@ table#history {
         text-decoration: none;
     }
 
-    td:hover {
+    td.link:hover {
         background-color: mistyrose;
+    }
+
+    td.center {
+        text-align: center;
     }
 }

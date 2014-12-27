@@ -192,6 +192,22 @@ module RubWiki2
         else
           error(404, "#{path} は存在しません")
         end
+      when /^diff&from=([0-9a-f]{40})&to=([0-9a-f]{40})$/
+        trees = { from: @git.get_from_oid($1), to: @git.get_from_oid($2)}
+        blobs = {}
+        trees.each do |key, tree|
+          if tree.exist?(path + '.md')
+            blobs[key] = tree.get(path + '.md')
+          elsif tree.exist?(path)
+            error(400, "Revision #{tree.oid} の #{path} は Markdown 以外のファイルです")
+          else
+            error(404, "Revision #{tree.oid} に #{path} は存在しません")
+          end
+        end
+        diff = blobs[:to].diff(blobs[:from])
+        content = haml(:diff, locals: { diff: diff, title: path, blobs: blobs })
+        content = haml(:tab, locals: { content: content, activetab: nil })
+        return haml(:default, locals: { content: content.scrub })
       else
         error(400, "不正なクエリです")
       end
