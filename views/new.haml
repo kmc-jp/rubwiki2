@@ -1,0 +1,4 @@
+%h1{ class: 'title' } 新規作成
+%form{ name: 'new', method: 'POST' }
+  %input{ type: 'text', name: 'path' }
+  %input{ type: 'submit', value: '新規作成', formaction: url('/?new') }

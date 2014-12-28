@@ -146,6 +146,10 @@ module RubWiki2
         else
           error(404, "#{path} は存在しません")
         end
+      when 'new'
+        content = haml(:new)
+        content = haml(:border, locals: { content: content })
+        return haml(:default, locals: { content: content })
       when /^diff&from=([0-9a-f]{40})&to=([0-9a-f]{40})$/
         roottrees = { from: @git.get_from_oid($1), to: @git.get_from_oid($2)}
         trees = {}
@@ -160,6 +164,8 @@ module RubWiki2
         content = haml(:dirdiff, locals: { diff: diff, title: path, trees: roottrees })
         content = haml(:dirtab, locals: { content: content, activetab: nil })
         return haml(:default, locals: { content: content })
+      else
+        error(400, "不正なクエリです")
       end
     end
 
@@ -329,6 +335,8 @@ module RubWiki2
         content = haml(:search, locals: { result: result, keyword: params[:keyword] })
         content = haml(:border, locals: { content: content })
         return haml(:default, locals: { content: content })
+      when 'new'
+        redirect to(URI.encode(params[:path]) + '?edit')
       else
         error(400, "不正なクエリです")
       end
