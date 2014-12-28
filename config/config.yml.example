@@ -1,3 +1,9 @@
 git_repo_path: "/path/to/repo.git"
 frontpage: "Front_Page"
 wikiname: "rubwiki"
+irc:
+  server: "example.com"
+  port: 6667
+  nick: "rubwiki"
+  pass: "password"
+  channel: "#channel"
