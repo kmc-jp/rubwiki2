@@ -225,6 +225,12 @@ $padding: 7px;
         width: $nav-width;
         margin: 0;
         padding: $padding;
+
+        ul {
+            list-style-type: square;
+            padding: 0 0 0 30px;
+            margin: 10px 0;
+        }
     }
 
     div#search {
