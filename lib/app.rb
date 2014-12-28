@@ -9,6 +9,7 @@ require 'sanitize'
 require 'kramdown'
 require 'mime-types'
 require 'string/scrub'
+require 'carrier-pigeon'
 require 'sinatra/base'
 require 'sinatra/reloader'
 require 'sinatra/config_file'
@@ -76,6 +77,23 @@ module RubWiki2
         options = { git: @git, baseurl: url('/') }
         html = Kramdown::Document.new(data, options).to_html_custom
         return Sanitize.fragment(html, Sanitize::Config::RELAXED)
+      end
+
+      def notify(path, author, message)
+        wikiname = settings.wikiname
+        url = url(URI.encode(path))
+        channel = settings.irc[:channel]
+        begin
+          pigeon = CarrierPigeon.new({
+            host: settings.irc[:server], port: settings.irc[:port],
+            nick: settings.irc[:nick], password: settings.irc[:pass],
+            channel: channel, join: true
+          })
+          pigeon.message(channel, "[#{wikiname}] #{path} #{url} updated by #{author}")
+          pigeon.message(channel, "[#{wikiname}] Commit Message: #{message}")
+        ensure
+          pigeon.die
+        end
       end
     end
 
@@ -271,6 +289,7 @@ module RubWiki2
           if old_obj.oid == params[:oid]
             @git.add(path + '.md', md_from_web)
             @git.commit(remote_user(), params[:message])
+            notify(path, remote_user(), params[:message]) if params[:notification] != 'false'
             redirect to(URI.encode(path))
           else
             old_obj = @git.get_from_oid(params[:oid])
@@ -279,6 +298,7 @@ module RubWiki2
             if success
               @git.add(path + '.md', merged)
               @git.commit(remote_user(), params[:message])
+              notify(path, remote_user(), params[:message]) if params[:notification] != 'false'
               redirect to(URI.encode(path))
             else
               form = haml(:form, locals: {
@@ -293,6 +313,7 @@ module RubWiki2
         elsif @git.can_create?(path + '.md')
           @git.add(path + '.md', md_from_web)
           @git.commit(remote_user(), params[:message])
+          notify(path, remote_user(), params[:message]) if params[:notification] != 'false'
           redirect to(URI.encode(path))
         else
           error(400, "#{path} は作成できません")

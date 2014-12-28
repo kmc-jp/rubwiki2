@@ -1,7 +1,10 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    addressable (2.3.6)
     backports (3.6.4)
+    carrier-pigeon (0.7.0)
+      addressable
     crass (1.0.1)
     haml (4.0.6)
       tilt
@@ -42,6 +45,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  carrier-pigeon
   haml
   kramdown
   mime-types
