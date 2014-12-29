@@ -1,26 +1,26 @@
 %h1{ class: 'title' }= title + '/'
 %span{ class: 'revision' }= "Changes from #{trees[:from].oid} to #{trees[:to].oid}"
 - diff.each do |patch|
-  - path = patch.delta.old_file[:path].force_encoding('utf-8').scrub
+  - path = patch.delta.old_file[:path].force_encoding(Encoding::UTF_8).scrub
   %h1= path.sub(/.md$/, '')
   - if File.extname(path) == '.md'
     %pre
       - patch.each_hunk do |hunk|
         %code{ class: 'diff-header' }
           &nbsp;&nbsp;
-          = hunk.header.force_encoding('utf-8').scrub
+          = hunk.header.force_encoding(Encoding::UTF_8).scrub
         - hunk.each_line do |line|
           - if line.addition?
             %code{ class: 'diff-addition' }
               +&nbsp;
-              = line.content.force_encoding('utf-8').scrub
+              = line.content.force_encoding(Encoding::UTF_8).scrub
           - elsif line.deletion?
             %code{ class: 'diff-deletion' }
               \-&nbsp;
-              = line.content.force_encoding('utf-8').scrub
+              = line.content.force_encoding(Encoding::UTF_8).scrub
           - elsif line.context?
             %code<
               &nbsp;&nbsp;
-              = line.content.force_encoding('utf-8').scrub
+              = line.content.force_encoding(Encoding::UTF_8).scrub
   - else
     Markdown のファイルではありません

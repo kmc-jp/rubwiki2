@@ -119,7 +119,7 @@ module RubWiki2
     end
 
     def content
-      return @repo.lookup(@oid).text
+      return @repo.lookup(@oid).text.force_encoding(Encoding::UTF_8)
     end
 
     def diff(blob)
