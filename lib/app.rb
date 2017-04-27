@@ -80,6 +80,7 @@ module RubWiki2
       end
 
       def notify(path, author, message)
+        return unless settings.irc[:notify]
         wikiname = settings.wikiname
         url = url(URI.encode(path))
         channel = settings.irc[:channel]

@@ -8,6 +8,7 @@
   %input{ type: 'hidden', name: 'oid', value: oid }
   %input{ type: 'submit', value: '更新', formaction: '?commit' }
   %input{ type: 'submit', value: 'プレビュー', formaction: '?preview' }
-  %label<
-    %input{ type: 'checkbox', name: 'notification', value: 'false', checked: !notify }
-    IRC に通知しない
+  - if settings.irc[:notify]
+    %label<
+      %input{ type: 'checkbox', name: 'notification', value: 'false', checked: !notify }
+      IRC に通知しない
