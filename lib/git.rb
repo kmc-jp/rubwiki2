@@ -74,9 +74,14 @@ module RubWiki2
     def search(text)
       result = []
       @repo.head.target.tree.walk_blobs do |root, entry|
-        markdown = get_from_oid(entry[:oid]).content
-        if markdown.include?(text)
-          result << root + entry[:name]
+        # Ignore case
+        text_down = text.downcase
+        full_path = root + entry[:name]
+        if full_path.downcase.include?(text_down)
+          result << full_path
+        else
+          markdown = get_from_oid(entry[:oid]).content.scrub
+          result << full_path if markdown.downcase.include?(text_down)
         end
       end
       return result
