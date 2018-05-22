@@ -75,7 +75,7 @@ module RubWiki2
         return Sanitize.fragment(html, Sanitize::Config::RELAXED)
       end
 
-      def notify(path, author, message, type:, revisions:)
+      def notify(path, author, message, type:, revisions: nil)
         wikiname = settings.wikiname
 
         if settings.slack
