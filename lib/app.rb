@@ -9,7 +9,7 @@ require 'sanitize'
 require 'kramdown'
 require 'mime-types'
 require 'string/scrub'
-require 'carrier-pigeon'
+require 'slack-notifier'
 require 'sinatra/base'
 require 'sinatra/reloader'
 require 'sinatra/config_file'
@@ -78,17 +78,22 @@ module RubWiki2
       def notify(path, author, message)
         wikiname = settings.wikiname
         url = url(URI.encode(path))
-        channel = settings.irc[:channel]
-        begin
-          pigeon = CarrierPigeon.new({
-            host: settings.irc[:server], port: settings.irc[:port],
-            nick: settings.irc[:nick], password: settings.irc[:pass],
-            channel: channel, join: true
-          })
-          pigeon.message(channel, "[#{wikiname}] #{path} #{url} updated by #{author}")
-          pigeon.message(channel, "[#{wikiname}] Commit Message: #{message}")
-        ensure
-          pigeon.die
+
+        if settings.slack
+          begin
+            opts = {username: wikiname}.merge(settings.slack)
+            notifier = Slack::Notifier.new settings.slack[:webhook], opts
+
+            attachment = {
+              title: "<#{url}|#{Slack::Notifier::Util::Escape.html path}>",
+              text: Slack::Notifier::Util::Escape.html(message),
+              author_name: author,
+            }
+
+            notifier.post(attachments: [attachment])
+          rescue
+            # noop
+          end
         end
       end
     end
