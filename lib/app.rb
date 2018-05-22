@@ -75,17 +75,21 @@ module RubWiki2
         return Sanitize.fragment(html, Sanitize::Config::RELAXED)
       end
 
-      def notify(path, author, message)
+      def notify(path, author, message, type:, revisions: nil)
         wikiname = settings.wikiname
-        url = url(URI.encode(path))
 
         if settings.slack
           begin
             opts = {username: wikiname}.merge(settings.slack)
             notifier = Slack::Notifier.new settings.slack[:webhook], opts
 
+            if revisions
+              diff_url = url(URI.encode("#{path}?diff&from=#{revisions[:old]}&to=#{revisions[:new]}"))
+              diff_link = "<#{diff_url}|(diff)>"
+            end
+
             attachment = {
-              title: "<#{url}|#{Slack::Notifier::Util::Escape.html path}>",
+              title: "<#{url}|#{Slack::Notifier::Util::Escape.html path}> #{type} #{diff_link}",
               text: Slack::Notifier::Util::Escape.html(message),
               author_name: author,
             }
@@ -292,11 +296,16 @@ module RubWiki2
         raise Error::EmptyCommitMessage.new if params[:message].empty?()
         md_from_web = NKF.nkf('-Luw', params[:markdown])
         if @git.exist?(path + '.md')
+          old_rev = @git.current_tree
           old_obj = @git.get(path + '.md')
           if old_obj.oid == params[:oid]
             @git.add(path + '.md', md_from_web)
             @git.commit(remote_user(), params[:message])
-            notify(path, remote_user(), params[:message]) if params[:notification] != 'false'
+
+            if params[:notification] != 'false'
+              notify(path, remote_user(), params[:message], type: :updated, revisions: {old: old_rev, new: @git.current_tree})
+            end
+
             redirect to(URI.encode(path))
           else
             old_obj = @git.get_from_oid(params[:oid])
@@ -305,7 +314,11 @@ module RubWiki2
             if success
               @git.add(path + '.md', merged)
               @git.commit(remote_user(), params[:message])
-              notify(path, remote_user(), params[:message]) if params[:notification] != 'false'
+
+              if params[:notification] != 'false'
+                notify(path, remote_user(), params[:message], type: :updated, revisions: {old: old_rev, new: @git.current_tree})
+              end
+
               redirect to(URI.encode(path))
             else
               form = haml(:form, locals: {
@@ -320,7 +333,11 @@ module RubWiki2
         elsif @git.can_create?(path + '.md')
           @git.add(path + '.md', md_from_web)
           @git.commit(remote_user(), params[:message])
-          notify(path, remote_user(), params[:message]) if params[:notification] != 'false'
+
+          if params[:notification] != 'false'
+            notify(path, remote_user(), params[:message], type: :created)
+          end
+
           redirect to(URI.encode(path))
         else
           error(400, "#{path} は作成できません")

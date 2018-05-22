@@ -7,7 +7,7 @@
   %br
   %input{ type: 'hidden', name: 'oid', value: oid }
   %input{ type: 'submit', value: '更新', formaction: '?commit' }
-  %input{ type: 'submit', value: 'プレビュー', formaction: '?preview' }
+  %input{ type: 'submit', value: 'プレビュー', formaction: '?preview', formnovalidate: true }
   %label<
     %input{ type: 'checkbox', name: 'notification', value: 'false', checked: !notify }
     更新を通知しない

@@ -16,6 +16,10 @@ module RubWiki2
       @tree = Tree.get_trees(@repo)
     end
 
+    def current_tree
+      @repo.head.target.tree.oid
+    end
+
     def add(path, data)
       @tree.add(path, data)
     end
