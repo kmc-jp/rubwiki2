@@ -3,7 +3,7 @@
   %br
   %label<
     Commit Message:
-    %input{ class: 'text', type: 'text', name: 'message', value: message }
+    %input{ class: 'text', type: 'text', name: 'message', value: message, required: true }
   %br
   %input{ type: 'hidden', name: 'oid', value: oid }
   %input{ type: 'submit', value: '更新', formaction: '?commit' }
