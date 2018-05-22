@@ -45,11 +45,7 @@ module RubWiki2
       end
 
       def remote_user
-        if request.env['REMOTE_USER']
-          return request.env['REMOTE_USER']
-        else
-          return 'anonymous'
-        end
+        request.env['REMOTE_USER'] || request.env['HTTP_X_FORWARDED_USER'] || 'anonymous'
       end
 
       def merge(web, old, new)
