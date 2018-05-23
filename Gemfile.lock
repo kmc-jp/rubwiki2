@@ -25,7 +25,7 @@ GEM
     rb-fsevent (0.10.3)
     rb-inotify (0.9.10)
       ffi (>= 0.5.0, < 2)
-    rugged (0.27.0)
+    rugged (0.26.3)
     sanitize (4.6.5)
       crass (~> 1.0.2)
       nokogiri (>= 1.4.4)
@@ -57,7 +57,7 @@ DEPENDENCIES
   haml
   kramdown
   mime-types
-  rugged
+  rugged (< 0.27)
   sanitize
   sass
   sinatra
