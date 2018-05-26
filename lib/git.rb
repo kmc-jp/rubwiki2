@@ -144,7 +144,7 @@ module RubWiki2
     end
 
     def self.create_tree_object(repo, children)
-      builder = Rugged::Tree::Builder.new()
+      builder = Rugged::Tree::Builder.new(repo)
       children.each do |name, obj|
         case obj.type
         when :blob
@@ -153,7 +153,7 @@ module RubWiki2
           builder.insert({ type: obj.type, name: name, oid: obj.oid, filemode: 0040000 })
         end
       end
-      oid = builder.write(repo)
+      oid = builder.write
       Git.chmod(repo, oid)
       return oid
     end
