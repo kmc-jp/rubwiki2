@@ -114,6 +114,13 @@ module RubWiki2
     end
 
     get '*/' do |path|
+      path_wo_query, query = env['REQUEST_URI'].split(??, 2)
+      if path == '' && !path_wo_query.end_with?('/')
+        t = '/'
+        t += "?#{query}" if query
+        redirect to(t)
+      end
+
       path = path[1..-1] if path[0] == '/'
       case request.query_string
       when ''
