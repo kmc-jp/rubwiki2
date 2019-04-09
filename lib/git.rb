@@ -118,7 +118,7 @@ module RubWiki2
       @filemode = filemode
     end
 
-    attr_reader :oid
+    attr_reader :oid, :filemode
 
     def type
       return :blob
@@ -157,7 +157,7 @@ module RubWiki2
       children.each do |name, obj|
         case obj.type
         when :blob
-          builder.insert({ type: obj.type, name: name, oid: obj.oid, filemode: Blob::NormalFileMode })
+          builder.insert({ type: obj.type, name: name, oid: obj.oid, filemode: obj.filemode })
         when :tree
           builder.insert({ type: obj.type, name: name, oid: obj.oid, filemode: Blob::DirectoryMode })
         end
