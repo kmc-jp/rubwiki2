@@ -190,7 +190,7 @@ module RubWiki2
           case obj.type
           when :blob
             if obj.symlink?
-              redirect_to = URI.encode(obj.content)
+              redirect_to = URI.encode(Pathname(path).dirname.join(obj.content).to_s)
               redirect_to.gsub!(/\.md$/, '')
               return redirect to(redirect_to)
             end
