@@ -206,6 +206,14 @@ module RubWiki2
           obj = @git.get(path)
           case obj.type
           when :blob
+            if obj.symlink?
+              redirect_to = URI.encode(Pathname(path).dirname.join(obj.content).to_s + '/')
+              # ディレクトリへのsymlinkなので最後に / が必要。
+              # / の有無は区別されていて、無いと .md が参照されるので。
+
+              return redirect to(redirect_to)
+            end
+
             # file
             guess_mime(path)
             return obj.content
