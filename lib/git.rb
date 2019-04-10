@@ -69,7 +69,7 @@ module RubWiki2
       obj = @repo.lookup(oid)
       case obj.type
       when :blob
-        return Blob.new(@repo, oid, obj[:filemode])
+        return Blob.new(@repo, oid, Blob::UnknownMode)
       when :tree
         return Tree.get_trees(@repo, oid)
       end
@@ -105,6 +105,7 @@ module RubWiki2
     NormalFileMode = 0100644
     DirectoryMode = 0040000
     SymlinkMode = 0120000
+    UnknownMode = Module.new
 
     def self.create(repo, data)
       oid = repo.write(data, :blob)
@@ -141,6 +142,7 @@ module RubWiki2
     end
 
     def symlink?
+      raise Error::UnknownMode.new if @filemode == UnknownMode
       @filemode == SymlinkMode
     end
   end
