@@ -105,7 +105,7 @@ module RubWiki2
     NormalFileMode = 0100644
     DirectoryMode = 0040000
     SymlinkMode = 0120000
-    UnknownMode = Module.new
+    UnknownMode = nil
 
     def self.create(repo, data)
       oid = repo.write(data, :blob)
