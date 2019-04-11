@@ -189,6 +189,11 @@ module RubWiki2
           obj = @git.get(path + '.md')
           case obj.type
           when :blob
+            if obj.symlink?
+              redirect_to = URI.encode(Pathname(path).dirname.join(obj.content).to_s)
+              redirect_to.gsub!(/\.md$/, '')
+              return redirect to(redirect_to)
+            end
             content = markdown(obj.content)
             content = haml(:page, locals: { content: content, title: path })
             content = haml(:tab, locals: { content: content, activetab: :page })

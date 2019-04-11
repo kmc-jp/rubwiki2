@@ -11,6 +11,8 @@ module RubWiki2
         super(message)
       end
     end
+
     class EmptyCommitMessage < StandardError; end
+    class UnknownMode < StandardError; end
   end
 end

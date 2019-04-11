@@ -69,7 +69,7 @@ module RubWiki2
       obj = @repo.lookup(oid)
       case obj.type
       when :blob
-        return Blob.new(@repo, oid)
+        return Blob.new(@repo, oid, Blob::UnknownMode)
       when :tree
         return Tree.get_trees(@repo, oid)
       end
@@ -102,18 +102,24 @@ module RubWiki2
   end
 
   class Blob
+    NormalFileMode = 0100644
+    DirectoryMode = 0040000
+    SymlinkMode = 0120000
+    UnknownMode = nil
+
     def self.create(repo, data)
       oid = repo.write(data, :blob)
       Git.chmod(repo, oid)
-      return Blob.new(repo, oid)
+      return Blob.new(repo, oid, NormalFileMode)
     end
 
-    def initialize(repo, oid)
+    def initialize(repo, oid, filemode)
       @repo = repo
       @oid = oid
+      @filemode = filemode
     end
 
-    attr_reader :oid
+    attr_reader :oid, :filemode
 
     def type
       return :blob
@@ -134,6 +140,11 @@ module RubWiki2
     def diff(blob)
       return @repo.lookup(@oid).diff(@repo.lookup(blob.oid))
     end
+
+    def symlink?
+      raise Error::UnknownMode.new if @filemode == UnknownMode
+      @filemode == SymlinkMode
+    end
   end
 
   class Tree
@@ -148,9 +159,9 @@ module RubWiki2
       children.each do |name, obj|
         case obj.type
         when :blob
-          builder.insert({ type: obj.type, name: name, oid: obj.oid, filemode: 0100644 })
+          builder.insert({ type: obj.type, name: name, oid: obj.oid, filemode: obj.filemode })
         when :tree
-          builder.insert({ type: obj.type, name: name, oid: obj.oid, filemode: 0040000 })
+          builder.insert({ type: obj.type, name: name, oid: obj.oid, filemode: Blob::DirectoryMode })
         end
       end
       oid = builder.write
@@ -164,7 +175,7 @@ module RubWiki2
       repo.lookup(oid).each do |obj|
         case obj[:type]
         when :blob
-          children[obj[:name]] = Blob.new(repo, obj[:oid])
+          children[obj[:name]] = Blob.new(repo, obj[:oid], obj[:filemode])
         when :tree
           children[obj[:name]] = Tree.get_trees(repo, obj[:oid])
         end
