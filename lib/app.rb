@@ -71,7 +71,11 @@ module RubWiki2
       def markdown(data)
         options = { git: @git, baseurl: url('/') }
         html = Kramdown::Document.new(data, options).to_html_custom
-        return Sanitize.fragment(html, Sanitize::Config::RELAXED)
+        sanitize_config = Sanitize::Config.merge(
+          Sanitize::Config::RELAXED,
+          :attributes => {'a' => %w[href hreflang name rel target]}
+        )
+        return Sanitize.fragment(html, sanitize_config)
       end
 
       def notify(path, author, message, type:, revisions: nil)
