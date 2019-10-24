@@ -1,5 +1,5 @@
-%a{ href: url(title) }
-  %h1{ class: 'title' }= title
+%h1{ class: 'title' }
+  %a{ href: url(title) }= title
 %span{ class: 'revision' }= "Changes from #{trees[:from].oid} to #{trees[:to].oid}"
 %pre
   - patch.each_hunk do |hunk|
