@@ -2,7 +2,9 @@
 %span{ class: 'revision' }= "Changes from #{trees[:from].oid} to #{trees[:to].oid}"
 - diff.each do |patch|
   - path = patch.delta.old_file[:path].force_encoding(Encoding::UTF_8).scrub
-  %h1= path.sub(/.md$/, '')
+  - uripath = path.sub(/.md$/, '')
+  %h1
+    %a{href: url(uripath) }= uripath
   - if File.extname(path) == '.md'
     %pre
       - patch.each_hunk do |hunk|
