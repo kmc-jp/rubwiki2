@@ -8,10 +8,11 @@ require 'tmpdir'
 require 'sanitize'
 require 'kramdown'
 require 'mime-types'
-require 'slack-notifier'
 require 'sinatra/base'
 require 'sinatra/reloader'
 require 'sinatra/config_file'
+require 'net/http'
+require 'json'
 
 require_relative 'git'
 require_relative 'error'
@@ -79,29 +80,40 @@ module RubWiki2
       end
 
       def notify(path, author, message, type:, revisions: nil)
-        wikiname = settings.wikiname
+        return unless settings.slack
 
-        if settings.slack
-          begin
-            opts = {username: wikiname}.merge(settings.slack)
-            notifier = Slack::Notifier.new settings.slack[:webhook], opts
-
-            if revisions
-              diff_url = url(URI.encode("#{path}?diff&from=#{revisions[:old]}&to=#{revisions[:new]}"))
-              diff_link = "<#{diff_url}|(diff)>"
-            end
-
-            attachment = {
-              title: "<#{url}|#{Slack::Notifier::Util::Escape.html path}> #{type} #{diff_link}",
-              text: Slack::Notifier::Util::Escape.html(message),
-              author_name: author,
-            }
-
-            notifier.post(attachments: [attachment])
-          rescue
-            # noop
-          end
+        def escape(str)
+          regexp = /[&><]/
+          replace = { ?& => '&amp;', ?> => '&gt;', ?< => '&lt;' }.freeze
+          str.gsub(regexp, replace)
         end
+
+        wikiname = settings.wikiname
+        settings.slack[:username] ||= wikiname
+
+        if revisions
+          diff_url = url(URI.encode("#{path}?diff&from=#{revisions[:old]}&to=#{revisions[:new]}"))
+          diff_link = "<#{diff_url}|(diff)>"
+        end
+
+        payload = {
+          username: settings.slack[:username],
+          blocks: [
+            type: :section,
+            text: {
+              type: :mrkdwn,
+              text: "*#{author}*\n*<#{url}|#{escape(path)}>* #{type} *#{diff_link}*\n#{escape(message)}",
+            },
+          ],
+        }
+
+        uri = URI.parse(settings.slack[:webhook])
+        https = Net::HTTP.new(uri.host, uri.port)
+        https.use_ssl = true
+        req = Net::HTTP::Post.new(uri.request_uri)
+        req.body = payload.to_json
+        req.content_type = 'application/json'
+        https.request(req)
       end
     end
 
