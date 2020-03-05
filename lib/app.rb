@@ -102,7 +102,7 @@ module RubWiki2
             type: :section,
             text: {
               type: :mrkdwn,
-              text: "*#{author}*\n*<#{url}|#{escape(path)}>* #{type} *#{diff_link}*\n#{escape(message)}",
+              text: "*#{author}*\n>*<#{url}|#{escape(path)}>* #{type} *#{diff_link}*\n>#{escape(message)}",
             },
           ],
         }
