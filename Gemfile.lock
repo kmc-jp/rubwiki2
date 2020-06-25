@@ -18,7 +18,7 @@ GEM
       mini_portile2 (~> 2.4.0)
     nokogumbo (2.0.1)
       nokogiri (~> 1.8, >= 1.8.4)
-    rack (2.0.8)
+    rack (2.2.3)
     rack-protection (2.0.5)
       rack
     rb-fsevent (0.10.3)
