@@ -25,7 +25,7 @@ GEM
     rb-fsevent (0.10.3)
     rb-inotify (0.10.0)
       ffi (~> 1.0)
-    rexml (3.2.4)
+    rexml (3.2.5)
     rugged (0.26.7)
     sanitize (5.2.1)
       crass (~> 1.0.2)
