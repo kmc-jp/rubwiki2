@@ -30,7 +30,7 @@ module RubWiki2
 
     def log(path = nil)
       commits = []
-      @repo.walk(@repo.head.target) do |commit|
+      @repo.walk(@repo.head.target.oid) do |commit|
         if path == nil || commit.diff(paths: [path]).size > 0
           commits << commit
         end
