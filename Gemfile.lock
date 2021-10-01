@@ -60,7 +60,7 @@ DEPENDENCIES
   haml
   kramdown
   mime-types
-  rugged (< 1)
+  rugged
   sanitize
   sass
   sinatra

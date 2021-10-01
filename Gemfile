@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'rugged', '< 1'
+gem 'rugged'
 gem 'sinatra'
 gem 'sinatra-contrib'
 gem 'mime-types'
