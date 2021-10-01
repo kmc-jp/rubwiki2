@@ -28,7 +28,7 @@ GEM
     rb-inotify (0.10.0)
       ffi (~> 1.0)
     rexml (3.2.5)
-    rugged (0.26.7)
+    rugged (0.99.0)
     sanitize (5.2.1)
       crass (~> 1.0.2)
       nokogiri (>= 1.8.0)
@@ -60,11 +60,11 @@ DEPENDENCIES
   haml
   kramdown
   mime-types
-  rugged (< 0.27)
+  rugged (< 1)
   sanitize
   sass
   sinatra
   sinatra-contrib
 
 BUNDLED WITH
-   1.17.1
+   1.17.3
