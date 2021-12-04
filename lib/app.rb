@@ -64,9 +64,10 @@ module RubWiki2
       end
 
       def error(errorcode, title, message = nil)
-        content = haml(:error, locals: { title: "#{errorcode}: #{title}", message: message })
+        ts = "#{errorcode}: #{title}"
+        content = haml(:error, locals: { title: ts, message: message })
         content = haml(:border, locals: { content: content })
-        halt(errorcode, haml(:default, locals: { content: content }))
+        halt(errorcode, haml(:default, locals: { content: content, title: ts }))
       end
 
       def markdown(data)
@@ -154,7 +155,7 @@ module RubWiki2
             end
             content = haml(:dir, locals: { entries: entries, path: path })
             content = haml(:dirtab, locals: { content: content, activetab: :dir })
-            return haml(:default, locals: { content: content })
+            return haml(:default, locals: { content: content, path: path, title: "list of /#{path}" })
           else
             error(400, "#{path} はディレクトリではありません")
           end
@@ -169,14 +170,14 @@ module RubWiki2
           log = @git.log(path)
           content = haml(:dirhistory, locals: { log: log, path: path })
           content = haml(:dirtab, locals: { content: content, activetab: :history })
-          return haml(:default, locals: { content: content })
+          return haml(:default, locals: { content: content, title: "history of /#{path}" })
         else
           error(404, "#{path} は存在しません")
         end
       when 'new'
         content = haml(:new)
         content = haml(:border, locals: { content: content })
-        return haml(:default, locals: { content: content })
+        return haml(:default, locals: { content: content, title: 'new' })
       when /^diff&from=([0-9a-f]{40})&to=([0-9a-f]{40})$/
         roottrees = { from: @git.get_from_oid($1), to: @git.get_from_oid($2)}
         trees = {}
@@ -190,7 +191,7 @@ module RubWiki2
         diff = trees[:from].diff(trees[:to])
         content = haml(:dirdiff, locals: { diff: diff, title: path, trees: roottrees })
         content = haml(:dirtab, locals: { content: content, activetab: nil })
-        return haml(:default, locals: { content: content })
+        return haml(:default, locals: { content: content, title: 'diff' })
       else
         error(400, "不正なクエリです")
       end
@@ -213,7 +214,7 @@ module RubWiki2
             content = markdown(obj.content)
             content = haml(:page, locals: { content: content, title: path })
             content = haml(:tab, locals: { content: content, activetab: :page })
-            return haml(:default, locals: { content: content })
+            return haml(:default, locals: { content: content, title: path })
           when :tree
             error(500, "#{path}.md というディレクトリが存在します",
                   'Git レポジトリを直接操作して修正してください。')
@@ -253,7 +254,7 @@ module RubWiki2
                     })
         content = haml(:edit, locals: { form: form, title: path })
         content = haml(:tab, locals: { content: content, activetab: :edit })
-        return haml(:default, locals: { content: content })
+        return haml(:default, locals: { content: content, title: "edit #{path}" })
       when 'history'
         if @git.exist?(path + '.md')
           unless @git.get(path + '.md').type == :blob
@@ -263,7 +264,7 @@ module RubWiki2
           log = @git.log(path + '.md')
           content = haml(:history, locals: { log: log, path: path })
           content = haml(:tab, locals: { content: content, activetab: :history })
-          return haml(:default, locals: { content: content })
+          return haml(:default, locals: { content: content, title: "history of #{path}" })
         else
           if @git.exist?(path)
             error(400, "#{path} は Markdown 以外のファイルです")
@@ -280,7 +281,7 @@ module RubWiki2
           content = markdown(obj.content)
           content = haml(:revision, locals: { content: content, title: path, revision: $1 })
           content = haml(:tab, locals: { content: content, activetab: nil })
-          return haml(:default, locals: { content: content })
+          return haml(:default, locals: { content: content, title: path })
         elsif tree.exist?(path)
           error(400, "#{path} は Markdown 以外のファイルです")
         else
@@ -301,7 +302,7 @@ module RubWiki2
         patch = blobs[:from].diff(blobs[:to])
         content = haml(:diff, locals: { patch: patch, title: path, trees: trees })
         content = haml(:tab, locals: { content: content, activetab: nil })
-        return haml(:default, locals: { content: content })
+        return haml(:default, locals: { content: content, title: path })
       else
         error(400, "不正なクエリです")
       end
@@ -318,7 +319,7 @@ module RubWiki2
         content = markdown(params[:markdown])
         content = haml(:preview, locals: { form: form, content: content, title: path })
         content = haml(:tab, locals: { content: content, activetab: :edit })
-        return haml(:default, locals: { content: content })
+        return haml(:default, locals: { content: content, title: path })
       when 'commit'
         raise Error::EmptyCommitMessage.new if params[:message].empty?()
         md_from_web = NKF.nkf('-Luw', params[:markdown])
@@ -354,7 +355,7 @@ module RubWiki2
                           })
               content = haml(:conflict, locals: { form: form, content: content, title: path })
               content = haml(:tab, locals: { content: content, activetab: :edit })
-              return haml(:default, locals: { content: content })
+              return haml(:default, locals: { content: content, title: path })
             end
           end
         elsif @git.can_create?(path + '.md')
@@ -379,7 +380,7 @@ module RubWiki2
         end
         content = haml(:search, locals: { result: result, keyword: params[:keyword] })
         content = haml(:border, locals: { content: content })
-        return haml(:default, locals: { content: content })
+        return haml(:default, locals: { content: content, title: params[:keyword] })
       when 'new'
         redirect to(URI.encode(params[:path]) + '?edit')
       else
