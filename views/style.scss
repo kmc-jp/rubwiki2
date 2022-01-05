@@ -137,6 +137,10 @@ $padding: 7px;
     div#content {
         margin: 0;
         padding: $padding;
+
+        ul {
+            overflow: auto;
+        }
     }
 
     div#tab {
