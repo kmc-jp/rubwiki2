@@ -367,6 +367,7 @@ div#content-html {
         @include border;
         padding: 10px;
         background-color: ghostwhite;
+        overflow: auto;
     }
 
     table {
