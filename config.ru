@@ -7,7 +7,7 @@ class Rack::Handler::WEBrick
 
   def self.run(app, options={})
     options[:DoNotReverseLookup] = true
-    run_original(app, options)
+    run_original(app, **options)
   end
 end
 
