@@ -93,7 +93,7 @@ module RubWiki2
         settings.slack[:username] ||= wikiname
 
         if revisions
-          diff_url = url(URI.encode_www_form_component("#{path}?diff&from=#{revisions[:old]}&to=#{revisions[:new]}"))
+          diff_url = url(URI.encode_www_form_component(path) + "?" + URI.encode_www_form([["diff"], ["from",  revisions[:old]], [ "to",  revisions[:new]]]))
           diff_link = "<#{diff_url}|(diff)>"
         end
 
