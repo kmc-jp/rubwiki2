@@ -1,6 +1,5 @@
 source 'https://rubygems.org'
 
-gem 'webrick'
 gem 'rugged'
 gem 'sinatra'
 gem 'sinatra-contrib'
@@ -9,3 +8,7 @@ gem 'kramdown'
 gem 'haml'
 gem 'sanitize'
 gem 'sassc'
+
+group :development do
+  gem 'webrick'
+end
