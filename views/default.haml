@@ -14,12 +14,12 @@
         %div{ class: 'border' }
           %ul
             %li<
-              %a{ href: '/' } Top
+              %a{ href: '/' } 内部トップ
             %li<
               %a{ href: url('/' + settings.frontpage) }<
                 Front
                 %span{ class: 'only-pc'}< Page
-            %li<
+            %li{ class: 'only-pc' }<
               %a{ href: url('/') } All
             %li<
               %a{ href: url('/?history') }<
@@ -29,7 +29,7 @@
               %a{ href: url('/?new') }<
                 New
                 %span{ class: 'only-pc'}< Page
-            %li<
+            %li{ class: 'only-pc' }<
               %a{ href: url('/一覧の一覧') }<
                 List of Lists
       %div{ id: 'search' }
