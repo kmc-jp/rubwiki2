@@ -3,7 +3,7 @@
 require 'uri'
 require 'nkf'
 require 'haml'
-require 'sass'
+require 'sassc'
 require 'tmpdir'
 require 'sanitize'
 require 'kramdown'
@@ -93,7 +93,7 @@ module RubWiki2
         settings.slack[:username] ||= wikiname
 
         if revisions
-          diff_url = url(URI.encode("#{path}?diff&from=#{revisions[:old]}&to=#{revisions[:new]}"))
+          diff_url = url(URI.encode_www_form_component(path) + "?" + URI.encode_www_form([["diff"], ["from",  revisions[:old]], [ "to",  revisions[:new]]]))
           diff_link = "<#{diff_url}|(diff)>"
         end
 
@@ -207,7 +207,7 @@ module RubWiki2
           case obj.type
           when :blob
             if obj.symlink?
-              redirect_to = URI.encode(Pathname(path).dirname.join(obj.content).to_s)
+              redirect_to = URI.encode_www_form_component(Pathname(path).dirname.join(obj.content).to_s)
               redirect_to.gsub!(/\.md$/, '')
               return redirect to(redirect_to)
             end
@@ -228,10 +228,10 @@ module RubWiki2
             return obj.content
           when :tree
             # dir (redirect)
-            redirect to(URI.encode(path) + '/')
+            redirect to(URI.encode_www_form_component(path) + '/')
           end
         else
-          redirect to(URI.encode(path) + '?edit')
+          redirect to(URI.encode_www_form_component(path) + '?edit')
         end
       when 'edit'
         if @git.exist?(path) && @git.get(path).type == :blob
@@ -273,7 +273,7 @@ module RubWiki2
           end
         end
       when 'raw'
-        redirect to(URI.encode(path) + '.md')
+        redirect to(URI.encode_www_form_component(path) + '.md')
       when /^revision=([0-9a-f]{40})$/
         tree = @git.get_from_oid($1)
         if tree.exist?(path + '.md')
@@ -334,7 +334,7 @@ module RubWiki2
               notify(path, remote_user(), params[:message], type: :updated, revisions: {old: old_rev, new: @git.current_tree})
             end
 
-            redirect to(URI.encode(path))
+            redirect to(URI.encode_www_form_component(path))
           else
             old_obj = @git.get_from_oid(params[:oid])
             new_obj = @git.get(path + '.md')
@@ -347,7 +347,7 @@ module RubWiki2
                 notify(path, remote_user(), params[:message], type: :updated, revisions: {old: old_rev, new: @git.current_tree})
               end
 
-              redirect to(URI.encode(path))
+              redirect to(URI.encode_www_form_component(path))
             else
               form = haml(:form, locals: {
                             markdown: merged, oid: new_obj.oid,
@@ -366,7 +366,7 @@ module RubWiki2
             notify(path, remote_user(), params[:message], type: :created)
           end
 
-          redirect to(URI.encode(path))
+          redirect to(URI.encode_www_form_component(path))
         else
           error(400, "#{path} は作成できません")
         end
@@ -382,7 +382,7 @@ module RubWiki2
         content = haml(:border, locals: { content: content })
         return haml(:default, locals: { content: content, title: params[:keyword] })
       when 'new'
-        redirect to(URI.encode(params[:path]) + '?edit')
+        redirect to(URI.encode_www_form_component(params[:path]) + '?edit')
       else
         error(400, "不正なクエリです")
       end

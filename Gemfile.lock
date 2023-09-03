@@ -2,7 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     crass (1.0.6)
-    ffi (1.10.0)
+    ffi (1.15.5)
     haml (5.0.4)
       temple (>= 0.8.0)
       tilt
@@ -22,20 +22,14 @@ GEM
     rack (2.2.6.4)
     rack-protection (2.2.3)
       rack
-    rb-fsevent (0.10.3)
-    rb-inotify (0.10.0)
-      ffi (~> 1.0)
     rexml (3.2.5)
     ruby2_keywords (0.0.5)
     rugged (0.99.0)
     sanitize (6.0.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.12.0)
-    sass (3.7.4)
-      sass-listen (~> 4.0.0)
-    sass-listen (4.0.0)
-      rb-fsevent (~> 0.9, >= 0.9.4)
-      rb-inotify (~> 0.9, >= 0.9.7)
+    sassc (2.4.0)
+      ffi (~> 1.9)
     sinatra (2.2.3)
       mustermann (~> 2.0)
       rack (~> 2.2)
@@ -49,6 +43,7 @@ GEM
       tilt (~> 2.0)
     temple (0.8.1)
     tilt (2.0.11)
+    webrick (1.8.1)
 
 PLATFORMS
   ruby
@@ -59,9 +54,10 @@ DEPENDENCIES
   mime-types
   rugged
   sanitize
-  sass
+  sassc
   sinatra
   sinatra-contrib
+  webrick
 
 BUNDLED WITH
    2.3.4

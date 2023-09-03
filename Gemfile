@@ -7,4 +7,8 @@ gem 'mime-types'
 gem 'kramdown'
 gem 'haml'
 gem 'sanitize'
-gem 'sass'
+gem 'sassc'
+
+group :development do
+  gem 'webrick'
+end
