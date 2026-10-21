@@ -8,7 +8,13 @@ gem 'kramdown'
 gem 'haml'
 gem 'sanitize'
 gem 'sassc'
+gem 'nkf'
 
 group :development do
   gem 'webrick'
+end
+
+group :test do
+  gem 'capybara'
+  gem 'rspec'
 end
